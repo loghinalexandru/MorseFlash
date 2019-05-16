@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background= "@color/darkSlateGray"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/ascii_encoding"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:textSize="200dp"
+        android:textColor="@android:color/white"
+        app:layout_constraintBottom_toTopOf="@id/morse_encoding"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+
+    <TextView
+        android:id="@+id/morse_encoding"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:textSize="50dp"
+        android:textColor="@android:color/white"
+        app:layout_constraintBottom_toTopOf="@id/text_layout"
+        app:layout_constraintTop_toBottomOf="@id/ascii_encoding"
+        app:layout_constraintVertical_bias="0.0"
+        tools:layout_editor_absoluteX="191dp" />
+
+    <android.support.design.widget.BottomNavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="0dp"
+        android:layout_marginStart="0dp"
+        android:background="@android:color/darker_gray"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:menu="@menu/bottom_nav_menu" />
+
+    <FrameLayout
+        android:id="@+id/text_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/nav_view"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        >
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginLeft="10dp"
+            tools:layout_editor_absoluteX="8dp"
+            tools:layout_editor_absoluteY="588dp">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/text_input"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:background="@android:drawable/editbox_dropdown_dark_frame"
+                android:drawableLeft="@android:drawable/stat_notify_chat"
+                android:textColor="@android:color/white"
+                android:gravity="center"
+                android:hint="@string/text_hint"
+                android:textColorHint="@android:color/white"
+                android:imeOptions="actionSend"
+                android:lines="3"
+                android:textCursorDrawable="@null"
+                android:paddingLeft="20dp"
+                android:paddingRight="70dp"
+                />
+        </android.support.design.widget.TextInputLayout>
+
+        <Button
+            android:id="@+id/submit"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginRight="20dp"
+            android:layout_gravity="right|center_vertical"
+            android:background="@android:drawable/ic_dialog_email" />
+
+    </FrameLayout>
+
+
+
+</android.support.constraint.ConstraintLayout>

@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">FlashApp</string>
+    <string name="title_home">Home</string>
+    <string name="title_history">History</string>
+    <string name="text_hint">Type your message here</string>
+    <string name="text_submit">Submit</string>
+    <string name="text_ascii">Letter</string>
+    <string name="text_morse">\u26AB\u2501</string>
+</resources>
