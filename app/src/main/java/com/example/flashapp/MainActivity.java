@@ -1,11 +1,18 @@
 package com.example.flashapp;
 
+import android.Manifest;
+import android.content.Intent;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.TextInputEditText;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -18,16 +25,18 @@ import java.util.Hashtable;
 
 //TODO: Prompt for camera permission;
 //TODO: Solve desync
+
 public class MainActivity extends AppCompatActivity {
     private TextView asciiEncoding;
     private TextView morseEncoding;
     private Button translateButton;
+    private Button sendSms;
     private TextInputEditText textInput;
     private String currentPhrase;
-    private static long speed = 3000;
+    private static int currentIndex = 0;
+    public static Handler callbackHandler;
 
-    private CountDownTimer timer;
-    private static Camera camera;
+    public static Camera camera;
     private static SurfaceTexture surface = new SurfaceTexture(1);
     private static Dictionary<Character, String>  asciiToMorse = new Hashtable<>();
     private static Dictionary<String , Character> morseToAscii = new Hashtable<>();
@@ -74,41 +83,69 @@ public class MainActivity extends AppCompatActivity {
         asciiToMorse.put('?', "..--..");
     }
 
-    private void clearText(){
+    private void reset(){
         this.morseEncoding.setText("");
         this.asciiEncoding.setText("");
+        this.currentPhrase = "";
+        this.currentIndex = 0;
     }
 
-    private void StartDecoding(final String phrase){
-        if(timer != null){
-            timer.cancel();
+    private boolean isValidPhrase(String phrase){
+        for(int i = 0; i < phrase.length(); ++i){
+            if(phrase.charAt(i) != ' ' && asciiToMorse.get(phrase.charAt(i)) == null)
+                return false;
         }
-        timer = new CountDownTimer(phrase.length() * this.speed, speed){
-            private int currentIndex = 0;
-
-            @Override
-            public void onTick(long millisUntilFinished) {
-                if(phrase.charAt(currentIndex) != ' '){
-                    translatePhraseToMorse(phrase , currentIndex);
-                }
-                currentIndex += 1;
-            }
-
-            @Override
-            public void onFinish() {
-                clearText();
-            }
-        }.start();
+        return true;
     }
 
-    private void translatePhraseToMorse(String phrase , int index) {
-        asciiEncoding.setText(String.valueOf(phrase.charAt(index)));
-        morseEncoding.setText(this.asciiToMorse.get(phrase.charAt(index)));
-        flashMorseCode(this.asciiToMorse.get(phrase.charAt(index)));
+    private void createHandler(){
+        callbackHandler = new Handler(Looper.getMainLooper()){
+            @Override
+            public void handleMessage(Message msg){
+                if(currentIndex < currentPhrase.length())
+                    translatePhraseToMorse();
+                else{
+                    reset();
+                }
+            }
+        };
+    }
+
+    private String asciiToMorse(String phrase){
+        StringBuilder output = new StringBuilder();
+        for(int i = 0; i < phrase.length(); ++i){
+            if(phrase.charAt(i) == ' '){
+                output.append('/');
+            }
+            else{
+                output.append(asciiToMorse.get(phrase.charAt(i)));
+            }
+            output.append(' ');
+        }
+        return output.toString().trim();
+    }
+
+    private void sendSmsIntent(String phrase){
+        Intent sms = new Intent(Intent.ACTION_VIEW);
+        sms.setData(Uri.parse("sms:"));
+        sms.putExtra("sms_body" , this.asciiToMorse(phrase));
+        startActivity(sms);
+    }
+
+    private void translatePhraseToMorse() {
+        if(currentPhrase.charAt(currentIndex) != ' '){
+            asciiEncoding.setText(String.valueOf(this.currentPhrase.charAt(currentIndex)));
+            morseEncoding.setText(this.asciiToMorse.get(this.currentPhrase.charAt(currentIndex)));
+            flashMorseCode(this.asciiToMorse.get(this.currentPhrase.charAt(currentIndex)));
+        }
+        else{
+            flashMorseCode(" ");
+        }
+        currentIndex += 1;
     }
 
     public static void flashMorseCode(String morseCode){
-        new Thread(new Worker(camera , morseCode)).start();
+        new Thread(new Worker(morseCode)).start();
     }
 
     private static void getCamera(){
@@ -129,22 +166,51 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void raiseInvalidInput(){
+        Toast.makeText(getBaseContext(),"Invalid phrase input!",
+                Toast.LENGTH_SHORT).show();
+    }
+
+    private void getCameraPermissions(){
+        ActivityCompat.requestPermissions(this , new String[] {Manifest.permission.CAMERA} , 1);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         init();
+        getCameraPermissions();
+        createHandler();
         setContentView(R.layout.activity_main);
         BottomNavigationView navView = findViewById(R.id.nav_view);
         asciiEncoding = findViewById(R.id.ascii_encoding);
         morseEncoding = findViewById(R.id.morse_encoding);
         translateButton = findViewById(R.id.submit);
+        sendSms = findViewById(R.id.sms);
         textInput = findViewById(R.id.text_input);
         translateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                reset();
                 currentPhrase = textInput.getText().toString().toUpperCase();
-                textInput.setText("");
-                StartDecoding(currentPhrase);
+                if(currentPhrase.length() > 0 && isValidPhrase(currentPhrase)){
+                    translatePhraseToMorse();
+                }
+                else{
+                    raiseInvalidInput();
+                }
+            }
+        });
+        sendSms.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String phrase = textInput.getText().toString().toUpperCase();
+                if(isValidPhrase(phrase) && phrase.length() > 0){
+                    sendSmsIntent(textInput.getText().toString().toUpperCase());
+                }
+                else{
+                    raiseInvalidInput();
+                }
             }
         });
     }

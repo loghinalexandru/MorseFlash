@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
-        android:textSize="200dp"
+        android:textSize="200sp"
         android:textColor="@android:color/white"
         app:layout_constraintBottom_toTopOf="@id/morse_encoding"
         app:layout_constraintTop_toTopOf="parent"
@@ -25,7 +25,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
-        android:textSize="50dp"
+        android:textSize="50sp"
         android:textColor="@android:color/white"
         app:layout_constraintBottom_toTopOf="@id/text_layout"
         app:layout_constraintTop_toBottomOf="@id/ascii_encoding"
@@ -50,13 +50,13 @@
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toTopOf="@id/nav_view"
         app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginBottom="30dp"
         app:layout_constraintRight_toRightOf="parent"
         >
 
         <android.support.design.widget.TextInputLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
             android:layout_marginRight="10dp"
             android:layout_marginLeft="10dp"
             tools:layout_editor_absoluteX="8dp"
@@ -66,31 +66,41 @@
                 android:id="@+id/text_input"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
+                android:layout_gravity="center_horizontal"
                 android:background="@android:drawable/editbox_dropdown_dark_frame"
-                android:drawableLeft="@android:drawable/stat_notify_chat"
-                android:textColor="@android:color/white"
                 android:gravity="center"
                 android:hint="@string/text_hint"
-                android:textColorHint="@android:color/white"
                 android:imeOptions="actionSend"
                 android:lines="3"
-                android:textCursorDrawable="@null"
-                android:paddingLeft="20dp"
+                android:paddingLeft="70dp"
                 android:paddingRight="70dp"
-                />
+                android:textColor="@android:color/white"
+                android:textColorHint="@android:color/white"
+                android:textCursorDrawable="@null" />
         </android.support.design.widget.TextInputLayout>
 
         <Button
             android:id="@+id/submit"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:layout_marginRight="20dp"
+            android:layout_marginRight="30dp"
+            android:layout_marginTop="5dp"
             android:layout_gravity="right|center_vertical"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:background="@android:drawable/stat_notify_chat" />
+
+        <Button
+            android:id="@+id/sms"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginLeft="30dp"
+            android:layout_marginTop="5dp"
+            android:layout_gravity="left|center_vertical"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             android:background="@android:drawable/ic_dialog_email" />
 
     </FrameLayout>
-
-
 
 </android.support.constraint.ConstraintLayout>

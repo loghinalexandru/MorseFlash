@@ -1,10 +1,13 @@
 package com.example.flashapp;
 
 import android.hardware.Camera;
+import android.os.Handler;
+import android.os.Message;
 
 public class Worker implements Runnable {
     private Camera camera;
     private String code;
+    private Handler handlerUI;
     private static long dotsTime = 500;
     private static long linesTime = 1000;
 
@@ -26,15 +29,20 @@ public class Worker implements Runnable {
         }
     }
 
-    public Worker(Camera camera , String morsecode){
-        this.camera = camera;
+    public Worker(String morsecode){
         this.code = morsecode;
+        this.camera = MainActivity.camera;
+        this.handlerUI = MainActivity.callbackHandler;
     }
 
     @Override
     public void run() {
         try {
             for(int i = 0; i < this.code.length(); ++i){
+                if(code.charAt(i) == ' '){
+                    Thread.sleep(1000);
+                    continue;
+                }
                 flashOn();
                 if(code.charAt(i) == '.'){
                     Thread.sleep(dotsTime);
@@ -45,6 +53,8 @@ public class Worker implements Runnable {
                 flashOff();
                 Thread.sleep(100);
             }
+            Thread.sleep(1000);
+            this.handlerUI.sendEmptyMessage(1);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
