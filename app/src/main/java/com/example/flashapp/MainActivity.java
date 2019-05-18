@@ -6,25 +6,21 @@ import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import java.io.IOException;
-import java.util.Dictionary;
 import java.util.Hashtable;
-
-//TODO: Prompt for camera permission;
-//TODO: Solve desync
 
 public class MainActivity extends AppCompatActivity {
     private TextView asciiEncoding;
@@ -34,14 +30,18 @@ public class MainActivity extends AppCompatActivity {
     private TextInputEditText textInput;
     private String currentPhrase;
     private static int currentIndex = 0;
+    private static Thread currentThread;
     public static Handler callbackHandler;
 
     public static Camera camera;
     private static SurfaceTexture surface = new SurfaceTexture(1);
-    private static Dictionary<Character, String>  asciiToMorse = new Hashtable<>();
-    private static Dictionary<String , Character> morseToAscii = new Hashtable<>();
+    private static Hashtable<Character, String>  asciiToMorse = new Hashtable<>();
 
     private static void init(){
+        fillAsciiToMorse();
+    }
+
+    private static void fillAsciiToMorse(){
         asciiToMorse.put('A', ".-");
         asciiToMorse.put('B', "-...");
         asciiToMorse.put('C', "-.-.");
@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         asciiToMorse.put('?', "..--..");
     }
 
-    private void reset(){
+    private void resetUI(){
         this.morseEncoding.setText("");
         this.asciiEncoding.setText("");
         this.currentPhrase = "";
@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
                 if(currentIndex < currentPhrase.length())
                     translatePhraseToMorse();
                 else{
-                    reset();
+                    resetUI();
                 }
             }
         };
@@ -145,7 +145,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public static void flashMorseCode(String morseCode){
-        new Thread(new Worker(morseCode)).start();
+        currentThread = new Thread(new Worker(morseCode));
+        currentThread.start();
     }
 
     private static void getCamera(){
@@ -166,23 +167,53 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private static void stopCurrentThread(){
+        if(currentThread != null){
+            currentThread.interrupt();
+        }
+    }
+
     private void raiseInvalidInput(){
         Toast.makeText(getBaseContext(),"Invalid phrase input!",
                 Toast.LENGTH_SHORT).show();
     }
 
     private void getCameraPermissions(){
-        ActivityCompat.requestPermissions(this , new String[] {Manifest.permission.CAMERA} , 1);
+        ActivityCompat.requestPermissions(this , new String[] {Manifest.permission.CAMERA , Manifest.permission.READ_SMS} , 1);
+    }
+
+    private void setNavigationListener(){
+        BottomNavigationView navView = findViewById(R.id.nav_view);
+        navView.getMenu().getItem(0).setChecked(true);
+        navView.setOnNavigationItemSelectedListener(
+                new BottomNavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                        switch (item.getItemId()) {
+                            case R.id.navigation_home:
+                                break;
+                            case R.id.navigation_history:
+                                Intent history = new Intent(MainActivity.this , HistoryActivity.class);
+                                startActivity(history);
+                                finish();
+                                overridePendingTransition(0, 0);
+                                break;
+                            default:
+                                break;
+                        }
+                        return true;
+                    }
+                });
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
         init();
         getCameraPermissions();
         createHandler();
-        setContentView(R.layout.activity_main);
-        BottomNavigationView navView = findViewById(R.id.nav_view);
+        setNavigationListener();
         asciiEncoding = findViewById(R.id.ascii_encoding);
         morseEncoding = findViewById(R.id.morse_encoding);
         translateButton = findViewById(R.id.submit);
@@ -191,7 +222,7 @@ public class MainActivity extends AppCompatActivity {
         translateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                reset();
+                resetUI();
                 currentPhrase = textInput.getText().toString().toUpperCase();
                 if(currentPhrase.length() > 0 && isValidPhrase(currentPhrase)){
                     translatePhraseToMorse();
@@ -218,19 +249,25 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        stopCurrentThread();
         releaseCamera();
+        resetUI();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        stopCurrentThread();
         getCamera();
+        resetUI();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        stopCurrentThread();
         releaseCamera();
+        resetUI();
     }
 
 
