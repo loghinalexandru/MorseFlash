@@ -1,6 +1,7 @@
 package com.example.flashapp;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
@@ -12,10 +13,13 @@ import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.TextInputEditText;
+import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private Button translateButton;
     private Button sendSms;
     private TextInputEditText textInput;
+    private TextInputLayout textLayout;
     private String currentPhrase;
     private static int currentIndex = 0;
     private static Thread currentThread;
@@ -206,6 +211,16 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+    private void setReferencesUI(){
+        asciiEncoding = findViewById(R.id.ascii_encoding);
+        morseEncoding = findViewById(R.id.morse_encoding);
+        translateButton = findViewById(R.id.submit);
+        sendSms = findViewById(R.id.sms);
+        textInput = findViewById(R.id.text_input);
+        textLayout = findViewById(R.id.text_layout);
+        textLayout.setHintAnimationEnabled(false);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -214,11 +229,7 @@ public class MainActivity extends AppCompatActivity {
         getCameraPermissions();
         createHandler();
         setNavigationListener();
-        asciiEncoding = findViewById(R.id.ascii_encoding);
-        morseEncoding = findViewById(R.id.morse_encoding);
-        translateButton = findViewById(R.id.submit);
-        sendSms = findViewById(R.id.sms);
-        textInput = findViewById(R.id.text_input);
+        setReferencesUI();
         translateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -226,6 +237,11 @@ public class MainActivity extends AppCompatActivity {
                 currentPhrase = textInput.getText().toString().toUpperCase();
                 if(currentPhrase.length() > 0 && isValidPhrase(currentPhrase)){
                     translatePhraseToMorse();
+                    textInput.clearFocus();
+                    textLayout.setHint("");
+                    InputMethodManager imm = (InputMethodManager)getSystemService(
+                            Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(textInput.getWindowToken(), 0);
                 }
                 else{
                     raiseInvalidInput();

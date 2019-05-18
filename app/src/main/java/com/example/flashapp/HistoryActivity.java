@@ -8,16 +8,27 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Layout;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
+import android.widget.Toast;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 public class HistoryActivity extends AppCompatActivity {
 
     private static Hashtable<String , Character> morseToAscii = new Hashtable<>();
+    private String[] messages;
+    private ListView list;
+    private SimpleAdapter adapter;
 
     private static void fillMorseToAscii(){
         morseToAscii.put(".-" , 'A');
@@ -65,12 +76,14 @@ public class HistoryActivity extends AppCompatActivity {
         fillMorseToAscii();
     }
 
-    public List<String> getAllSmsFromProvider() {
-        List<String> lstSms = new ArrayList<String>();
+    public List<List<String>> getAllSms() {
+        List<String> smsAdress = new ArrayList<String>();
+        List<String> smsBody = new ArrayList<String>();
+        List<List<String>> output = new ArrayList<>();
         ContentResolver cr = this.getContentResolver();
 
         Cursor c = cr.query(Telephony.Sms.Inbox.CONTENT_URI, // Official CONTENT_URI from docs
-                new String[] { Telephony.Sms.Inbox.BODY }, // Select body text
+                new String[] {Telephony.Sms.Inbox.ADDRESS , Telephony.Sms.Inbox.BODY}, // Select body text
                 null,
                 null,
                 Telephony.Sms.Inbox.DEFAULT_SORT_ORDER); // Default sort order
@@ -79,7 +92,8 @@ public class HistoryActivity extends AppCompatActivity {
 
         if (c.moveToFirst()) {
             for (int i = 0; i < totalSMS; i++) {
-                lstSms.add(c.getString(0));
+                smsAdress.add("FROM: " + c.getString(0));
+                smsBody.add(c.getString(1));
                 c.moveToNext();
             }
         } else {
@@ -87,7 +101,26 @@ public class HistoryActivity extends AppCompatActivity {
         }
         c.close();
 
-        return lstSms;
+        c = cr.query(Telephony.Sms.Sent.CONTENT_URI, // Official CONTENT_URI from docs
+                new String[] {Telephony.Sms.Inbox.ADDRESS , Telephony.Sms.Inbox.BODY}, // Select body text
+                null,
+                null,
+                Telephony.Sms.Inbox.DEFAULT_SORT_ORDER); // Default sort order
+
+        totalSMS = c.getCount();
+
+        if (c.moveToFirst()) {
+            for (int i = 0; i < totalSMS; i++) {
+                smsAdress.add("TO: " + c.getString(0));
+                smsBody.add(c.getString(1));
+                c.moveToNext();
+            }
+        } else {
+            throw new RuntimeException("You have no SMS in Inbox");
+        }
+        output.add(smsAdress);
+        output.add(smsBody);
+        return output;
     }
 
     private void setNavigationListener(){
@@ -115,11 +148,49 @@ public class HistoryActivity extends AppCompatActivity {
                 });
     }
 
+    private String decode(String phrase){
+        String[] letters = phrase.split(" ");
+        StringBuilder output = new StringBuilder();
+        for(String encoding : letters){
+            if(encoding.charAt(0) == '/'){
+                output.append(' ');
+            }
+            else{
+                output.append(morseToAscii.get(encoding));
+            }
+        }
+        return output.toString();
+    }
+
+    private List<Map<String , String>> getMorseMessages(){
+        List<List<String>> allMessages = getAllSms();
+        List<Map<String , String>> morseMessages = new ArrayList<>();
+        for(int i = 0; i < allMessages.get(0).size(); ++i){
+            boolean validMessage = true;
+            for(Character letter : allMessages.get(1).get(i).toCharArray()){
+                if("./- ".indexOf(letter) == -1){
+                    validMessage = false;
+                    continue;
+                }
+            }
+            if(validMessage){
+                Map<String , String> listItem = new HashMap<>();
+                listItem.put("title" , allMessages.get(0).get(i));
+                listItem.put("body" , decode(allMessages.get(1).get(i)));
+                morseMessages.add(listItem);
+            }
+        }
+        return morseMessages;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
         setNavigationListener();
         init();
+        list = findViewById(R.id.message_list);
+        adapter = new SimpleAdapter(this ,  getMorseMessages() , R.layout.message_layout, new String[]{"title" , "body"} , new int[]{R.id.title, R.id.body});
+        list.setAdapter(adapter);
     }
 }
