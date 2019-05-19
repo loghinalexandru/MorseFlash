@@ -18,7 +18,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.TextView;
@@ -154,6 +153,10 @@ public class MainActivity extends AppCompatActivity {
         currentThread.start();
     }
 
+    private void hideTitleBar(){
+        getSupportActionBar().hide();
+    }
+
     private static void getCamera(){
         if(camera == null){
             try {
@@ -230,6 +233,7 @@ public class MainActivity extends AppCompatActivity {
         createHandler();
         setNavigationListener();
         setReferencesUI();
+        hideTitleBar();
         translateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

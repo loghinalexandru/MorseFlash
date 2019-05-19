@@ -3,6 +3,7 @@ package com.example.flashapp;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.provider.Telephony;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -11,6 +12,8 @@ import android.os.Bundle;
 import android.text.Layout;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -26,7 +29,6 @@ import java.util.Map;
 public class HistoryActivity extends AppCompatActivity {
 
     private static Hashtable<String , Character> morseToAscii = new Hashtable<>();
-    private String[] messages;
     private ListView list;
     private SimpleAdapter adapter;
 
@@ -176,7 +178,7 @@ public class HistoryActivity extends AppCompatActivity {
             if(validMessage){
                 Map<String , String> listItem = new HashMap<>();
                 listItem.put("title" , allMessages.get(0).get(i));
-                listItem.put("body" , decode(allMessages.get(1).get(i)));
+                listItem.put("body" ,allMessages.get(1).get(i) + "\n\n" + decode(allMessages.get(1).get(i)));
                 morseMessages.add(listItem);
             }
         }
@@ -192,5 +194,13 @@ public class HistoryActivity extends AppCompatActivity {
         list = findViewById(R.id.message_list);
         adapter = new SimpleAdapter(this ,  getMorseMessages() , R.layout.message_layout, new String[]{"title" , "body"} , new int[]{R.id.title, R.id.body});
         list.setAdapter(adapter);
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Map<String , String> item = (Map<String , String>)list.getItemAtPosition(position);
+                Intent sms = new Intent(Intent.ACTION_VIEW , Uri.fromParts("sms" , item.get("title").split(" ")[1] , null));
+                startActivity(sms);
+            }
+        });
     }
 }

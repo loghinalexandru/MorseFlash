@@ -6,4 +6,5 @@
     <string name="text_submit">Submit</string>
     <string name="text_ascii">Letter</string>
     <string name="text_morse">\u26AB\u2501</string>
+    <string name="history_title">Recent</string>
 </resources>
