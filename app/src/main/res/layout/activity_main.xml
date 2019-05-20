@@ -89,7 +89,7 @@
             android:layout_gravity="right|center_vertical"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:background="@android:drawable/stat_notify_chat" />
+            android:background= "@android:drawable/stat_notify_chat" />
 
         <Button
             android:id="@+id/sms"

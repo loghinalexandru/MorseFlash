@@ -178,7 +178,9 @@ public class MainActivity extends AppCompatActivity {
     private static void stopCurrentThread(){
         if(currentThread != null){
             currentThread.interrupt();
+            currentThread = null;
         }
+
     }
 
     private void raiseInvalidInput(){
@@ -199,8 +201,11 @@ public class MainActivity extends AppCompatActivity {
                     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                         switch (item.getItemId()) {
                             case R.id.navigation_home:
+                                stopCurrentThread();
+                                resetUI();
                                 break;
                             case R.id.navigation_history:
+                                stopCurrentThread();
                                 Intent history = new Intent(MainActivity.this , HistoryActivity.class);
                                 startActivity(history);
                                 finish();

@@ -56,7 +56,7 @@ public class Worker implements Runnable {
             Thread.sleep(1000);
             this.handlerUI.sendEmptyMessage(1);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            flashOff();
         }
     }
 }

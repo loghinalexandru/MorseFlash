@@ -84,11 +84,11 @@ public class HistoryActivity extends AppCompatActivity {
         List<List<String>> output = new ArrayList<>();
         ContentResolver cr = this.getContentResolver();
 
-        Cursor c = cr.query(Telephony.Sms.Inbox.CONTENT_URI, // Official CONTENT_URI from docs
-                new String[] {Telephony.Sms.Inbox.ADDRESS , Telephony.Sms.Inbox.BODY}, // Select body text
+        Cursor c = cr.query(Telephony.Sms.Inbox.CONTENT_URI,
+                new String[] {Telephony.Sms.Inbox.ADDRESS , Telephony.Sms.Inbox.BODY},
                 null,
                 null,
-                Telephony.Sms.Inbox.DEFAULT_SORT_ORDER); // Default sort order
+                Telephony.Sms.Inbox.DEFAULT_SORT_ORDER);
 
         int totalSMS = c.getCount();
 
@@ -103,11 +103,11 @@ public class HistoryActivity extends AppCompatActivity {
         }
         c.close();
 
-        c = cr.query(Telephony.Sms.Sent.CONTENT_URI, // Official CONTENT_URI from docs
-                new String[] {Telephony.Sms.Inbox.ADDRESS , Telephony.Sms.Inbox.BODY}, // Select body text
+        c = cr.query(Telephony.Sms.Sent.CONTENT_URI,
+                new String[] {Telephony.Sms.Inbox.ADDRESS , Telephony.Sms.Inbox.BODY},
                 null,
                 null,
-                Telephony.Sms.Inbox.DEFAULT_SORT_ORDER); // Default sort order
+                Telephony.Sms.Inbox.DEFAULT_SORT_ORDER);
 
         totalSMS = c.getCount();
 
@@ -138,7 +138,6 @@ public class HistoryActivity extends AppCompatActivity {
                                 startActivity(main);
                                 finish();
                                 overridePendingTransition(0, 0);
-
                                 break;
                             case R.id.navigation_history:
                                 break;
